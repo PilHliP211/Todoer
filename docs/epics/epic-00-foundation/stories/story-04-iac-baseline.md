@@ -11,6 +11,7 @@ As an operator, I want core GCP infrastructure defined as code so I can reproduc
 - IaC provisions required APIs (Artifact Registry, Cloud Run, IAM Credentials, Secret Manager), Artifact Registry repository, Cloud Run services, and runtime service account(s).
 - IAM roles for runtime service accounts (Secret Manager access, Cloud SQL client if used) are codified.
 - Outputs expose CD inputs (project id, region, artifact repo, Cloud Run service name, runtime SA email).
+- Outputs include a canonical per-environment config map (or JSON) that can be consumed by tooling to populate GitHub environment variables and local `.env` files with minimal manual edits.
 
 ## Technical Notes
 
@@ -18,6 +19,7 @@ As an operator, I want core GCP infrastructure defined as code so I can reproduc
 - Keep deployer and runtime service accounts separate.
 - Use least-privilege roles; avoid Owner/Editor.
 - Cloud Run services can be created with a placeholder image; CD updates the image later.
+- Prefer a single source-of-truth output (e.g., `infra/outputs/staging.json`, `infra/outputs/prod.json`) to reduce duplicated config entry.
 
 ## Manual Validation
 

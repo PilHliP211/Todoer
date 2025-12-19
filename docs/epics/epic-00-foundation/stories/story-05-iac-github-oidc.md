@@ -12,12 +12,13 @@ As a developer, I want GitHub OIDC and IAM bindings defined in IaC so CD auth is
 - Deployer service account roles required by CD (run.admin, artifactregistry.writer, secretmanager.secretAccessor, etc.) are applied via IaC.
 - If Cloud Run uses a custom runtime service account, deployer has `roles/iam.serviceAccountUser` on that runtime service account.
 - Outputs provide the provider resource name and deployer service account email for GitHub secrets.
+- GitHub environment variables/secrets for staging/prod can be populated via a scripted bootstrap (or GitHub provider), minimizing manual configuration to a single step.
 
 ## Technical Notes
 
 - Use `principalSet` bindings with `attribute.repository` to avoid subject drift.
 - Keep conditions explicit; add `attribute.ref` only if branch restriction is desired.
-- Consider managing GitHub environment secrets/vars via GitHub provider or document manual steps.
+- Consider managing GitHub environment secrets/vars via GitHub provider or a bootstrap script that reads IaC outputs and writes GitHub environment variables/secrets.
 
 ## Manual Validation
 
