@@ -5,12 +5,14 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 ---
 
 ## Scope Notes (V1)
+
 - Included: multi-tenant API, SMS magic-link auth, role-based access control, task assignment/completion with points, Cloud deployment.
 - Excluded: any UI, gamification beyond storing points, advanced scheduling/recurrence, exports, notifications other than login SMS.
 
 ---
 
 ## Non-Functional Requirements
+
 - **Isolation**: every request is scoped to `taskListId`; no cross-tenant reads or leaks in responses, errors, or logs.
 - **Security**: store magic-link tokens hashed; JWT/session secrets in Secret Manager only; do not log full phone numbers (mask to last 4).
 - **Performance**: p50 < 300ms, p95 < 1s for CRUD endpoints under nominal load; auth endpoints warmed to avoid cold-start delays.
@@ -22,6 +24,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 ---
 
 ## Data Model (Draft)
+
 - **User**: `id`, `phoneNumber` (unique), `createdAt`, `updatedAt`. Super admin tracked via boolean flag on this record (no separate table).
 - **TaskList**: `id`, `name`, `status` (active/archived), `createdAt`, `createdBy`.
 - **Membership**: `id`, `userId`, `taskListId`, `role` (admin/user), `status` (active/disabled), `createdAt`, `updatedAt`. Unique `(userId, taskListId)`.
@@ -36,6 +39,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 ## Acceptance Criteria by Epic
 
 ### EPIC 0: Platform Foundation
+
 - Repo scaffold with Node.js 20 + TypeScript, Fastify, ESLint/Prettier, Vitest (unit) and Supertest (integration).
 - Single API endpoint live in staging/prod (`GET /healthz` or `/ping`) and readiness endpoint.
 - CI pipeline runs lint, type-check, unit and integration tests, then builds container.
@@ -45,18 +49,21 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - Structured logging with correlation IDs; basic alert on deployment failures.
 
 ### EPIC 1: Multi-Tenant Task List Foundation
+
 - All resource queries filter by `taskListId`; super admin calls must declare target tenant.
 - Task lists can be created, listed, and archived; archived lists block new logins and task mutations.
 - Task list names do not need to be globally unique (name + id distinguishes tenants).
 - Cross-tenant access attempts return 403 without leaking existence of other tenants.
 
 ### EPIC 2: Roles and Permissions
+
 - Role matrix enforced on every endpoint (super admin > admin > user). Unauthorized actions return 403 with standard error shape.
 - Admins cannot elevate to super admin; users cannot self-elevate.
 - Super admin tracked via boolean flag on user; no read-only admin variant in v1.
 - Automated tests cover permission boundaries for each endpoint.
 
 ### EPIC 3: SMS Magic Link Authentication
+
 - `POST /auth/magic-link/request`: accepts `phoneNumber`, `taskListId`; rejects if phone not allowlisted for that tenant; applies per-phone rate limit (5/hour) with no IP throttling in v1.
 - SMS provider: Twilio with sender aligned to purchased domain/brand.
 - SMS includes app name, task list name, expiry time; no PII besides masked phone and link.
@@ -65,6 +72,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - Used or expired tokens return 401 with consistent error payload.
 
 ### EPIC 4: User and Membership Management
+
 - Admin can add a membership by phone number (creates user if not exists) and set role (admin/user).
 - Admin can list memberships for their task list; super admin can list any.
 - Admin can disable or change role for a membership; disabled members cannot authenticate or complete tasks in that task list.
@@ -72,12 +80,14 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - All membership changes emit audit events with actor and target recorded.
 
 ### EPIC 5: Task Creation and Assignment
+
 - Admin can create tasks with required fields: `title`, `points`, `priority`; optional `description`.
 - Admin can assign tasks to a specific user membership or to all users; assignments are validated to belong to the same task list.
 - Admin can edit task fields and reassign; edits update `updatedAt` and create audit entries.
 - Archived tasks are excluded from active lists and cannot be completed.
 
 ### EPIC 6: Task Completion and Points
+
 - Users can view tasks assigned to them and all-user tasks in their task lists.
 - `POST /tasks/:id/complete` is idempotent per `(taskId, userId)`; duplicates rejected with 409 or treated as no-op without double points.
 - Completion records include `pointsAwarded` and `completedAt`; totals derivable per user per task list.
@@ -85,6 +95,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - Manual point adjustments and backdated completions are not allowed in v1 (server time only).
 
 ### EPIC 7: API Contract
+
 - All endpoints under `/api/v1`; JSON responses; errors follow `{ error: { code, message, details? } }`.
 - List endpoints support pagination via `limit` and `cursor` (or `pageToken`) with stable sorting by `createdAt` then `id`.
 - Validation errors return 400 with field-level details; auth 401; permission 403; not found 404.
@@ -93,6 +104,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - OpenAPI generated from TypeScript types and published with releases.
 
 ### EPIC 8: Google Cloud Deployment
+
 - Cloud Run deployment with min instances set to reduce auth latency; Cloud SQL (PostgreSQL) with private connection.
 - Secrets in Secret Manager; environment variables reference secret versions; no secrets committed.
 - Migrations run automatically on deploy (prisma/migrate or equivalent) and are idempotent.
@@ -103,6 +115,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 ---
 
 ## API Surface (V1 Summary)
+
 - Auth: `POST /auth/magic-link/request`, `POST /auth/magic-link/verify`, `POST /auth/logout`.
 - Task lists (super admin): `POST /task-lists`, `GET /task-lists`, `PATCH /task-lists/:id` (name/status).
 - Memberships: `POST /task-lists/:id/memberships`, `GET /task-lists/:id/memberships`, `PATCH /memberships/:id` (role/status).
@@ -115,6 +128,7 @@ All endpoints except health and magic-link request/verify require authenticated 
 ---
 
 ## Operational and Quality Gates
+
 - Unit and integration tests cover auth flows, permission boundaries, idempotent completions, and pagination.
 - Smoke tests for deployment (health, readiness, DB connectivity, SMS provider connectivity).
 - Backup and restore runbook for Cloud SQL; daily backups retained per policy.

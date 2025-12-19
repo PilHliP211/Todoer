@@ -2,13 +2,17 @@ module.exports = {
   root: true,
   env: {
     es2022: true,
-    node: true
+    node: true,
   },
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    sourceType: "module"
+    sourceType: 'module',
   },
-  plugins: ["@typescript-eslint"],
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
-  ignorePatterns: ["dist"]
+  plugins: ['@typescript-eslint'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
+  ignorePatterns: ['dist'],
 };
