@@ -1,0 +1,6 @@
+environment                = "prod"
+project_id                 = "todoer-prod"
+region                     = "us-central1"
+artifact_registry_repo     = "todoer-prod"
+cloud_run_service_name     = "todoer-api-prod"
+runtime_service_account_name = "todoer-runtime-prod"
