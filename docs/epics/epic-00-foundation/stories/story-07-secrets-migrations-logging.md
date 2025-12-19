@@ -1,4 +1,4 @@
-# Story 0.5: Secrets, Migrations, and Logging Baseline
+# Story 0.7: Secrets, Migrations, and Logging Baseline
 
 ## User Story
 
@@ -7,6 +7,7 @@ As an operator, I want secrets management, database migrations, and structured l
 ## Acceptance Criteria
 
 - Secrets pulled from Secret Manager; no secrets in repo or plaintext env files. `.env.example` lists required keys.
+- Cloud Run runtime service account has `roles/secretmanager.secretAccessor` for secrets referenced in `CLOUD_RUN_SECRETS`.
 - Prisma migrations scaffolded; a baseline migration can run successfully against staging/prod DBs.
 - Migration step included in CI/CD before deploy; fails the pipeline on error.
 - Structured logging (JSON) with correlation/request IDs for all requests, including health/readiness.
@@ -14,7 +15,8 @@ As an operator, I want secrets management, database migrations, and structured l
 
 ## Technical Notes
 
-- Configure Secret Manager access for Cloud Run service account; environment variables reference secret versions.
+- Configure Secret Manager access for the Cloud Run runtime service account; environment variables reference secret versions.
+- If no secrets are required, leave `CLOUD_RUN_SECRETS` empty to avoid deploy errors.
 - Migration command (e.g., `prisma migrate deploy`) invoked in pipeline.
 - Logging middleware attaches correlation ID (generate if missing) and logs request method/path/status/duration.
 - Keep baseline schema minimal (e.g., `_prisma_migrations` plus placeholder table) to validate connectivity.
