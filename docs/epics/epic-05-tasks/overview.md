@@ -25,7 +25,6 @@
 - `Task`: `id`, `taskListId`, `title`, `description`, `priority`, `points`, `status` (active/archived), timestamps, `createdBy`.
 - `Assignment`: `id`, `taskId`, `assigneeType` (user/all), `assigneeId` nullable when all, timestamps, `createdBy`. Unique `(taskId, userId)` per user assignments; only one "all" assignment.
 
-## Risks / Questions
-- Need for assignment history? (Current: not required; audit captures changes.)
-- Do we need due dates/recurrence in v1? (Out of scope.)
-
+## Decisions
+- Assignment history table not needed; rely on audit events.
+- Due dates/recurrence remain out of scope for v1.

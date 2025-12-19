@@ -9,7 +9,7 @@
 
 ## Acceptance Criteria
 - `POST /auth/magic-link/request` accepts `phoneNumber`, `taskListId`; rejects if not allowlisted for that tenant.
-- Rate limits per phone (e.g., 5/hour) and optionally per IP; returns 429 with retry hint.
+- Rate limits per phone: 5 requests/hour; IP-based throttling deferred. Returns 429 with retry hint.
 - SMS includes app name, task list name, expiry time; no sensitive data beyond the link.
 - `POST /auth/magic-link/verify` accepts single-use token; expires in ~15 minutes (configurable); on success issues JWT/session scoped to user + taskListId and marks token used.
 - Used/expired/invalid tokens return 401 with consistent error envelope.
@@ -24,7 +24,7 @@
 - `MagicLink`: `id`, `userId`, `taskListId` (nullable for super admin scope), `tokenHash`, `expiresAt`, `usedAt`, `createdAt`, `createdByRequestId`.
 - Store phone in E.164; mask to last 4 digits in logs.
 
-## Risks / Questions
-- Chosen SMS provider, sender ID/brand, and template text.
-- Link domain and scheme (https required) and deep link path format.
-
+## Decisions
+- SMS provider: Twilio; sender aligned to purchased domain/brand.
+- Magic-link URL: `https://{yourdomain}/login?token=...` (https required).
+- Per-phone rate limit 5/hour; skip IP throttling in v1.

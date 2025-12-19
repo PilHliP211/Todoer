@@ -24,7 +24,6 @@
 - `Membership.role` in {admin, user}; super admin tracked separately (e.g., flag on `User` or join table).
 - Permission checks keyed on `(userId, taskListId, role, status)`.
 
-## Risks / Questions
-- How to model super admins: global flag vs. dedicated table?
-- Do admins need a read-only mode (not in v1)?
-
+## Decisions
+- Super admins modeled as a boolean/flag on `User` (no separate table in v1).
+- No read-only admin role in v1.

@@ -16,13 +16,13 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - **Performance**: p50 < 300ms, p95 < 1s for CRUD endpoints under nominal load; auth endpoints warmed to avoid cold-start delays.
 - **Availability**: single region Cloud Run + Cloud SQL; clear errors if SMS provider unavailable; health/readiness endpoints for probes.
 - **Auditability**: record actor, action, target, timestamp, and metadata for admin and role-affecting changes.
-- **Rate Limits**: login requests per phone number (e.g., 5/hour) and per IP if available; 429 with retry-after hint.
+- **Rate Limits**: login requests per phone number capped at 5/hour; IP-based throttling deferred; 429 with retry-after hint.
 - **Timezone/Clock**: store timestamps in UTC; rely on server time sync; no client timezone logic in v1.
 
 ---
 
 ## Data Model (Draft)
-- **User**: `id`, `phoneNumber` (unique), `createdAt`, `updatedAt`.
+- **User**: `id`, `phoneNumber` (unique), `createdAt`, `updatedAt`. Super admin tracked via boolean flag on this record (no separate table).
 - **TaskList**: `id`, `name`, `status` (active/archived), `createdAt`, `createdBy`.
 - **Membership**: `id`, `userId`, `taskListId`, `role` (admin/user), `status` (active/disabled), `createdAt`, `updatedAt`. Unique `(userId, taskListId)`.
 - **Task**: `id`, `taskListId`, `title`, `description`, `priority` (low/medium/high), `points` (int >= 0), `status` (active/archived), `createdAt`, `updatedAt`, `createdBy`.
@@ -35,19 +35,32 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 
 ## Acceptance Criteria by Epic
 
+### EPIC 0: Platform Foundation
+- Repo scaffold with Node.js 20 + TypeScript, Fastify, ESLint/Prettier, Vitest (unit) and Supertest (integration).
+- Single API endpoint live in staging/prod (`GET /healthz` or `/ping`) and readiness endpoint.
+- CI pipeline runs lint, type-check, unit and integration tests, then builds container.
+- CD pipeline builds/pushes image (Cloud Build or GH Actions) to Artifact Registry and deploys to Cloud Run staging; manual promotion to prod.
+- Prisma migrations tooling present; migration step runs before deploy (even if minimal schema).
+- Secrets in Secret Manager; `.env.example` provided; no secrets in repo.
+- Structured logging with correlation IDs; basic alert on deployment failures.
+
 ### EPIC 1: Multi-Tenant Task List Foundation
 - All resource queries filter by `taskListId`; super admin calls must declare target tenant.
 - Task lists can be created, listed, and archived; archived lists block new logins and task mutations.
+- Task list names do not need to be globally unique (name + id distinguishes tenants).
 - Cross-tenant access attempts return 403 without leaking existence of other tenants.
 
 ### EPIC 2: Roles and Permissions
 - Role matrix enforced on every endpoint (super admin > admin > user). Unauthorized actions return 403 with standard error shape.
 - Admins cannot elevate to super admin; users cannot self-elevate.
+- Super admin tracked via boolean flag on user; no read-only admin variant in v1.
 - Automated tests cover permission boundaries for each endpoint.
 
 ### EPIC 3: SMS Magic Link Authentication
-- `POST /auth/magic-link/request`: accepts `phoneNumber`, `taskListId`; rejects if phone not allowlisted for that tenant; applies rate limit.
+- `POST /auth/magic-link/request`: accepts `phoneNumber`, `taskListId`; rejects if phone not allowlisted for that tenant; applies per-phone rate limit (5/hour) with no IP throttling in v1.
+- SMS provider: Twilio with sender aligned to purchased domain/brand.
 - SMS includes app name, task list name, expiry time; no PII besides masked phone and link.
+- Magic-link URL format: `https://{yourdomain}/login?token=...` over HTTPS.
 - `POST /auth/magic-link/verify`: single-use token, expires in 15 minutes (configurable); on success issues JWT/session scoped to user + taskListId and marks token used.
 - Used or expired tokens return 401 with consistent error payload.
 
@@ -55,6 +68,7 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - Admin can add a membership by phone number (creates user if not exists) and set role (admin/user).
 - Admin can list memberships for their task list; super admin can list any.
 - Admin can disable or change role for a membership; disabled members cannot authenticate or complete tasks in that task list.
+- Disabling a membership revokes active sessions for that task list immediately.
 - All membership changes emit audit events with actor and target recorded.
 
 ### EPIC 5: Task Creation and Assignment
@@ -68,17 +82,21 @@ This document expands the initial requirements in `docs/v1_requirements.md` with
 - `POST /tasks/:id/complete` is idempotent per `(taskId, userId)`; duplicates rejected with 409 or treated as no-op without double points.
 - Completion records include `pointsAwarded` and `completedAt`; totals derivable per user per task list.
 - Admin can list completions by task list; users can list their own completions.
+- Manual point adjustments and backdated completions are not allowed in v1 (server time only).
 
 ### EPIC 7: API Contract
 - All endpoints under `/api/v1`; JSON responses; errors follow `{ error: { code, message, details? } }`.
 - List endpoints support pagination via `limit` and `cursor` (or `pageToken`) with stable sorting by `createdAt` then `id`.
 - Validation errors return 400 with field-level details; auth 401; permission 403; not found 404.
+- Pagination uses opaque cursor tokens (no offset-based pagination).
+- Error codes constrained to: `invalid_input`, `unauthorized`, `forbidden`, `not_found`, `conflict`, `rate_limited`, `internal_error`.
 - OpenAPI generated from TypeScript types and published with releases.
 
 ### EPIC 8: Google Cloud Deployment
 - Cloud Run deployment with min instances set to reduce auth latency; Cloud SQL (PostgreSQL) with private connection.
 - Secrets in Secret Manager; environment variables reference secret versions; no secrets committed.
 - Migrations run automatically on deploy (prisma/migrate or equivalent) and are idempotent.
+- SMS egress: start without static IP/NAT; add Cloud NAT only if Twilio requires fixed IP allowlisting.
 - Structured logging to Cloud Logging with correlation IDs; alerts on auth failure spikes and SMS send failures.
 - CI/CD: build, test, and deploy to staging; manual promotion to production.
 

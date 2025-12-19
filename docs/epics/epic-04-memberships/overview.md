@@ -22,7 +22,6 @@
 - `User`: `id`, `phoneNumber` (unique), timestamps.
 - `Membership`: `id`, `userId`, `taskListId`, `role` (admin/user), `status` (active/disabled), unique `(userId, taskListId)`.
 
-## Risks / Questions
-- Invite flow messaging when user already exists on another task list (should succeed if allowlisted).
-- Should disabled memberships revoke active sessions immediately? (Recommended: yes.)
-
+## Decisions
+- Invite flow: if user exists elsewhere, still allow adding membership silently (idempotent success message).
+- Disabling a membership revokes active sessions for that task list immediately.

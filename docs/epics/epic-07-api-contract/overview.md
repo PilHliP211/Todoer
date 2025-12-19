@@ -26,7 +26,6 @@
 - Consistent timestamp format (ISO 8601 UTC).
 - Tenant context derived from token; super admin may pass explicit tenant header.
 
-## Risks / Questions
-- Cursor format (opaque token vs. encoded offset).
-- Error code taxonomy (needs a short, stable list for clients).
-
+## Decisions
+- Pagination uses opaque cursor tokens (no offsets).
+- Error codes limited to: `invalid_input`, `unauthorized`, `forbidden`, `not_found`, `conflict`, `rate_limited`, `internal_error`.

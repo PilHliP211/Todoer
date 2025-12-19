@@ -23,7 +23,6 @@
 - `TaskList`: `id`, `name`, `status` (active/archived), timestamps, `createdBy`.
 - Tenant foreign key on all scoped tables; indexes include `taskListId`.
 
-## Risks / Questions
-- Do we need soft-delete versus archive? (Current: archive only.)
-- Tenant naming uniqueness rules (global or per owner?).
-
+## Decisions
+- Lifecycle: archive only in v1; no soft-delete.
+- Tenant naming: duplicates allowed (no global uniqueness requirement).

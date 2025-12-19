@@ -22,7 +22,6 @@
 - `Completion`: `id`, `taskId`, `userId`, `taskListId`, `completedAt`, `pointsAwarded`, `createdAt`. Unique `(taskId, userId)`.
 - Totals can be derived via aggregation; cached totals optional but not required for v1.
 
-## Risks / Questions
-- Manual adjustments to points? (Not in scope for v1; if added, must be audited.)
-- Should completions allow backdating? (Recommend: use server time only in v1.)
-
+## Decisions
+- Manual point adjustments/backdating not allowed in v1.
+- Completion timestamps use server time only (no client-provided backdating).

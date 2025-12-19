@@ -22,7 +22,6 @@
 - DB connectivity via Cloud SQL connector or private VPC; ensure minimal privileges for service account.
 - Backups for Cloud SQL enabled with retention policy; restore runbook documented.
 
-## Risks / Questions
-- SMS provider networking (egress) from Cloud Run—does it require static IP/NAT?
-- Observability stack for metrics/alerts (Cloud Monitoring policies to be defined).
-
+## Decisions
+- SMS egress: start without static IP/NAT; add Cloud NAT only if Twilio requires fixed IP allowlisting.
+- Observability: baseline alerts on auth failure spikes and SMS send failures; otherwise rely on Cloud Logging and Error Reporting in v1.
