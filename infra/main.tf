@@ -20,6 +20,8 @@ provider "google" {
   region  = var.region
 }
 
+data "google_project" "current" {}
+
 resource "google_project_service" "required" {
   for_each = toset([
     "artifactregistry.googleapis.com",
@@ -37,6 +39,16 @@ resource "google_artifact_registry_repository" "docker" {
   location      = var.region
   repository_id = var.artifact_registry_repo
   format        = "DOCKER"
+
+  depends_on = [google_project_service.required]
+}
+
+resource "google_artifact_registry_repository_iam_member" "cloud_run_reader" {
+  project    = var.project_id
+  location   = var.region
+  repository = google_artifact_registry_repository.docker.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:service-${data.google_project.current.number}@serverless-robot-prod.iam.gserviceaccount.com"
 
   depends_on = [google_project_service.required]
 }
