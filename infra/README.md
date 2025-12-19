@@ -5,9 +5,20 @@ remote state bucket plus per-environment configs for staging and prod.
 
 ## Prerequisites
 
-- Terraform >= 1.5
+- Terraform >= 1.5 (installed locally; the repo only provides a thin npm shim)
 - `gcloud auth application-default login`
 - A GCP project for each environment
+
+### Install Terraform
+
+Terraform is not bundled with npm. Install it via one of the official distribution channels:
+
+- Homebrew: `brew install terraform`
+- `tfenv`: `tfenv install 1.6.6 && tfenv use 1.6.6`
+- Direct download: https://developer.hashicorp.com/terraform/downloads
+
+This repo includes a local npm dev dependency (`terraform`) that simply forwards to the
+system `terraform` binary, so the CLI must be on your `PATH`.
 
 ## 1) Bootstrap remote state bucket
 
