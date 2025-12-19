@@ -1,12 +1,15 @@
 # EPIC 6: Task Completion & Points
 
 ## Scope
+
 - Allow users to complete assigned tasks once; record completions and points.
 
 ## Goals
+
 - Idempotent completion, accurate point totals, and clear visibility for admins.
 
 ## Acceptance Criteria
+
 - Users can view tasks assigned to them and all-user tasks in their task lists.
 - `POST /tasks/:id/complete` is idempotent per `(taskId, userId)`; duplicates rejected with 409 or treated as no-op without double points.
 - Completion records capture `pointsAwarded` and `completedAt`; totals derivable per user per task list.
@@ -14,14 +17,17 @@
 - Archived tasks cannot be completed.
 
 ## Interfaces
+
 - `POST /tasks/:id/complete`
 - `GET /task-lists/:id/completions` (admin)
 - `GET /me/completions`
 
 ## Data Notes
+
 - `Completion`: `id`, `taskId`, `userId`, `taskListId`, `completedAt`, `pointsAwarded`, `createdAt`. Unique `(taskId, userId)`.
 - Totals can be derived via aggregation; cached totals optional but not required for v1.
 
 ## Decisions
+
 - Manual point adjustments/backdating not allowed in v1.
 - Completion timestamps use server time only (no client-provided backdating).
