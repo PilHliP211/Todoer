@@ -9,6 +9,7 @@
     "lint": "eslint \"{src,tests}/**/*.ts\"",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
+    "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
