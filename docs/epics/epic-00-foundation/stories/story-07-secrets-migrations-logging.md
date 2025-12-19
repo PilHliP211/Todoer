@@ -12,6 +12,7 @@ As an operator, I want secrets management, database migrations, and structured l
 - Migration step included in CI/CD before deploy; fails the pipeline on error.
 - Structured logging (JSON) with correlation/request IDs for all requests, including health/readiness.
 - Basic alert configured on deployment/migration failures (or surfaced via CI/CD notification).
+- Local development `.env` can be generated from `.env.example` plus IaC outputs (or a single documented bootstrap step), minimizing manual configuration.
 
 ## Technical Notes
 

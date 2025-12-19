@@ -31,6 +31,7 @@
 - Migrations tooling present (Prisma) even if schema minimal; migration step executed in pipeline before deploy.
 - Secrets pulled from Secret Manager; no secrets in repo; `.env.example` provided.
 - Logging structured with correlation IDs; basic alert on deployment failures.
+- Environment configuration is centralized: IaC outputs and a bootstrap script (or documented command) populate GitHub environment variables/secrets and a local `.env` with minimal manual edits.
 
 ## Interfaces
 

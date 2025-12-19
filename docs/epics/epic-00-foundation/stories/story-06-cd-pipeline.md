@@ -12,6 +12,7 @@ As an operator, I want automated delivery to Cloud Run staging with manual promo
 - GitHub environments provide per-environment inputs (project, region, artifact repo, service name, min instances, optional secrets).
 - If secrets are referenced, the Cloud Run runtime service account has `roles/secretmanager.secretAccessor` on those secrets.
 - Deployment metadata (commit SHA, image tag) is set as env vars or logged.
+- Pipeline consumes environment variables from a single source (GitHub environments populated from IaC outputs) without per-deploy manual edits.
 
 ## Technical Notes
 
@@ -28,3 +29,4 @@ As an operator, I want automated delivery to Cloud Run staging with manual promo
 3. Approve promotion from `main`: confirm prod deploy uses the same image tag.
 4. Hit `/healthz` on staging and prod; expect 200.
 5. If secrets are configured, confirm they are available at runtime (startup logs show non-empty config).
+6. Confirm no manual environment variable updates were needed beyond the bootstrap step.
