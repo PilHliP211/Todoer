@@ -11,9 +11,7 @@
     "format:write": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --config vitest.config.ts",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:integration:remote": "vitest run --config vitest.integration.remote.config.ts",
-    "migrate": "node scripts/migrate.js"
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "fastify": "^4.28.1"
