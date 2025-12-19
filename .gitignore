@@ -1,2 +1,8 @@
 node_modules
 dist
+.terraform/
+*.tfstate
+*.tfstate.backup
+.crash.log
+crash.log
+infra/outputs/*.json
