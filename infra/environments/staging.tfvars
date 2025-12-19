@@ -1,0 +1,6 @@
+environment                = "staging"
+project_id                 = "todoer-staging"
+region                     = "us-central1"
+artifact_registry_repo     = "todoer-staging"
+cloud_run_service_name     = "todoer-api-staging"
+runtime_service_account_name = "todoer-runtime-staging"
