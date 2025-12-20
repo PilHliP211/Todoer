@@ -62,9 +62,8 @@ resource "google_service_account" "runtime" {
 
 resource "google_iam_workload_identity_pool" "github" {
   project                   = var.project_id
-  location                  = "global"
   workload_identity_pool_id = var.github_workload_identity_pool_id
-  display_name              = "Todoer GitHub Actions pool (${var.environment})"
+  display_name              = "Todoer GitHub pool (${var.environment})"
   description               = "Workload Identity Pool for GitHub Actions CD (${var.environment})"
 }
 
@@ -74,7 +73,6 @@ locals {
 
 resource "google_iam_workload_identity_pool_provider" "github" {
   project                            = var.project_id
-  location                           = "global"
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = var.github_workload_identity_provider_id
   display_name                       = "Todoer GitHub OIDC (${var.environment})"
