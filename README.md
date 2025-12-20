@@ -10,6 +10,7 @@ ToDo app with reward system, SMS authentication and multitenancy on GCP.
 - Git
 - Terraform >= 1.5
 - Google Cloud SDK (`gcloud`)
+- GitHub CLI (`gh`) and `jq` (for CD environment bootstrap)
 
 Install Terraform via one of the official channels:
 
