@@ -46,10 +46,27 @@ terraform -chdir=infra plan -var-file=environments/staging.tfvars
 terraform -chdir=infra apply -var-file=environments/staging.tfvars
 ```
 
+## 4) Configure GitHub environments for CD
+
+After applying Terraform, populate GitHub environment variables/secrets from the IaC outputs:
+
+```bash
+export GITHUB_REPOSITORY=OWNER/REPO
+./infra/scripts/bootstrap-github-env.sh --env staging
+./infra/scripts/bootstrap-github-env.sh --env prod
+```
+
+Prerequisites:
+
+- `gh auth login` with access to the repository
+- `jq` installed locally
+- GitHub environments named `staging` and `prod` created in the repo settings
+
 ## Outputs
 
 - Terraform outputs expose CD inputs (`project_id`, `region`, `artifact_registry_repo`,
-  `cloud_run_service_name`, `runtime_service_account_email`).
+  `cloud_run_service_name`, `runtime_service_account_email`, `workload_identity_provider`,
+  `deployer_service_account_email`).
 - A canonical JSON file is written to `infra/outputs/<env>.json` for CD and local tooling.
 
 ## Notes
